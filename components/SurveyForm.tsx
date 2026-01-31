@@ -164,10 +164,7 @@ export function SurveyForm() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                if (response.status === 409) {
-                    throw new Error(errorData.error || "You have already submitted from this device/IP.")
-                }
-                throw new Error("Submission failed")
+                throw new Error(errorData.error || `Server error: ${response.status}`);
             }
 
             setIsSuccess(true)

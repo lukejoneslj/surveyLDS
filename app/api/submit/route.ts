@@ -78,7 +78,8 @@ export async function POST(req: NextRequest) {
         });
 
         const existingIps = getRows.data.values?.flat() || [];
-        if (existingIps.includes(ip)) {
+        // Only check for duplicates if we have a valid IP
+        if (ip !== "unknown" && existingIps.includes(ip)) {
             // Already submitted
             return NextResponse.json(
                 { error: "You have already submitted a response." },
@@ -96,10 +97,10 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json({ success: true });
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error submitting to Google Sheets:", error);
         return NextResponse.json(
-            { error: "Internal Server Error" },
+            { error: `Server Error: ${error.message || "Unknown error"}` },
             { status: 500 }
         );
     }
