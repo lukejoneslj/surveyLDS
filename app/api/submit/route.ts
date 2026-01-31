@@ -71,21 +71,9 @@ export async function POST(req: NextRequest) {
         // "makes sure that we only count one response per ip adress at the end" -> usually means "prevent duplicate submissions".
         // Let's implement a check.
 
-        // 1. Read existing IPs (column B, index 1)
-        const getRows = await sheets.spreadsheets.values.get({
-            spreadsheetId,
-            range: "Sheet1!B:B", // Assuming IP is the second column now
-        });
-
-        const existingIps = getRows.data.values?.flat() || [];
-        // Only check for duplicates if we have a valid IP
-        if (ip !== "unknown" && existingIps.includes(ip)) {
-            // Already submitted
-            return NextResponse.json(
-                { error: "You have already submitted a response." },
-                { status: 409 } // Conflict
-            );
-        }
+        // Duplicate check REMOVED per user request.
+        // We allow multiple submissions from the same IP (e.g. shared devices).
+        // IP is still recorded in the sheet for manual filtering if needed.
 
         await sheets.spreadsheets.values.append({
             spreadsheetId,

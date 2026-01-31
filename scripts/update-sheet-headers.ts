@@ -33,9 +33,6 @@ async function updateHeaders() {
     try {
         await sheets.spreadsheets.values.update({
             spreadsheetId,
-            range: "Sheet1!A1:Z500", // Update row 1, let API calculate needed columns width (A1:XX1)
-            // Actually A1:Z1 might be too small if we have >26 columns.
-            // Safe bet: "Sheet1!1:1" (entire first row)
             range: "Sheet1!1:1",
             valueInputOption: "USER_ENTERED",
             requestBody: {
