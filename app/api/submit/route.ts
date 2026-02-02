@@ -39,16 +39,31 @@ export async function POST(req: NextRequest) {
             return data[header] || "";
         });
 
-        const spreadsheetId = process.env.GOOGLE_SHEET_ID!;
-        const clientEmail = process.env.GOOGLE_CLIENT_EMAIL!;
-        const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n")!;
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+        let privateKey = process.env.GOOGLE_PRIVATE_KEY;
 
         if (!spreadsheetId || !clientEmail || !privateKey) {
-            console.error("Missing Google Sheets credentials");
+            console.error("Missing Google Sheets credentials in env");
             return NextResponse.json(
-                { error: "Server configuration error" },
+                { error: "Server configuration error: Missing Credentials" },
                 { status: 500 }
             );
+        }
+
+        // Sanitize Private Key:
+        // 1. Remove surrounding quotes (common Vercel/env paste error)
+        if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+            privateKey = privateKey.slice(1, -1);
+        }
+        // 2. Handle escaped newlines (if pasted as single line string with \n)
+        privateKey = privateKey.replace(/\\n/g, "\n");
+
+        // 3. Debug logging (SAFE - do not log full key)
+        if (!privateKey.includes("BEGIN PRIVATE KEY")) {
+            console.error("Values check - Key length:", privateKey.length);
+            console.error("Values check - Key start:", privateKey.substring(0, 20));
+            throw new Error("Invalid Private Key format: Missing BEGIN header");
         }
 
         const auth = new google.auth.GoogleAuth({
